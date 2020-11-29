@@ -45,9 +45,9 @@ ui <- navbarPage(
                     # stock picker
                     pickerInput(inputId = "stock_selection", 
                                 label   = "Select A Stock", 
-                                choices = c("AAPL", "NVDA", "SQ", "SPY", "BND"), 
+                                choices = c("VTI","MSFT", "AAPL", "NVDA", "SQ", "SPY", "BND", "TSLA", "WMT"), 
                                 multiple = FALSE,
-                                selected = "TSLA", 
+                                selected = "VTI", 
                                 options = pickerOptions(
                                     actionsBox = FALSE,
                                     liveSearch = TRUE,
@@ -58,7 +58,7 @@ ui <- navbarPage(
                     # Date from
                     dateInput(inputId = "date1",
                               label = "Select Beginning Date",
-                              value = as.Date("2020-01-01")),
+                              value = as.Date("2020-11-01")),
                     
                     
                     # Date to
@@ -88,7 +88,7 @@ ui <- navbarPage(
                     # Number of Simulations
                     pickerInput(inputId = "forecast_days", 
                                 label   = "Select Forecast Days", 
-                                choices = c(15, 30, 60), 
+                                choices = c(15, 30, 60, 90, 120, 150, 180), 
                                 multiple = FALSE,
                                 selected = 30, 
                                 options = pickerOptions(
@@ -112,23 +112,27 @@ ui <- navbarPage(
                     div(class="text-center", h4("Monte-Carlo Simulation Results")),
                     tabsetPanel(id="display", 
                                 
+                                tabPanel(title = "Time Series", 
+                                         plotlyOutput(outputId = "time_series_plot")), 
+                                
+                                tabPanel(title = "Stock Summary", 
+                                         dataTableOutput("Table2")), 
                                 
                                 tabPanel(title = "Histogram", 
                                          plotlyOutput(outputId = "plotly_plot")), 
                                 
-                                tabPanel(title = "Density Plot", 
+                                tabPanel(title = "Density", 
                                          plotlyOutput(outputId = "plotly_plot_density")), 
                                 
-                                tabPanel(title = "Time Series Plot", 
-                                         plotlyOutput(outputId = "time_series_plot")), 
-                                
-                                
-                                tabPanel(title = "All Results",
-                                         dataTableOutput("Table")
-                                ), 
-                                
                                 tabPanel(title = "Summarized Results", 
-                                         dataTableOutput("Simulation_Summary"))
+                                         dataTableOutput("Simulation_Summary")),
+                            
+                                
+                                tabPanel(title = "All Trials",
+                                         dataTableOutput("Table")
+                                )
+                                
+
                                 
                     )
                 )
@@ -148,7 +152,7 @@ ui <- navbarPage(
                             style = "color: #ffffff; background-color: #3e3f3a;",
                             p("Utilize the input selections on the left panel to modify the settings for the Monte-Carlo simulation. 
                               The average price and growth rate for the stock is calculated based on the starting and ending dates. The default
-                              volatility is 50%, feel free to adjust higher or lower as you please.")
+                              volatility is 50%, feel free to adjust higher or lower as you please."),
                         )
                     )
                 )
@@ -222,6 +226,19 @@ server <- function(input, output) {
                                         tibble() %>% 
                                         set_names(nm = "Results") %>% 
                                         mutate(Results = round(Results, digits = 0)))
+    
+   
+    # Table to show stock selection summary
+    output$Table2 <- renderDataTable(
+        average_price() %>%
+            tibble() %>%
+            bind_cols(ror() %>% tibble(), volatility() %>% tibble(), ) %>%
+            set_names(nm = c("Average Price", "Rate of Return (%)", "Volatility")) %>%
+            mutate(`Average Price` = `Average Price` %>% round(1), 
+                   Volatility = Volatility %>% round(2),
+                   Volatiliy_Pct = (Volatility/`Average Price`*100) %>% round(2),
+                   `Rate of Return (%)` = (`Rate of Return (%)`*100) %>% round(2))
+    )
     
     # Table to show simulation summary ----
     output$Simulation_Summary <- renderDataTable(

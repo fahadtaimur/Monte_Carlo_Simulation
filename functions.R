@@ -31,8 +31,8 @@ hist_plotter <- function(df, current_price){
     df %>%
       as.tibble() %>%
       mutate(label = case_when(
-        value > current_price ~ "Buy",
-        TRUE ~ "Not Buy"
+        value > current_price ~ "Purchase",
+        TRUE ~ "Don't Purchase"
       )) %>%
       ggplot(aes(value, fill=label)) + 
       geom_histogram(show.legend = FALSE, bins = 50) +
@@ -47,8 +47,8 @@ density_plotter <- function(df, current_price){
     df %>%
       as.tibble() %>%
       mutate(label = case_when(
-        value > current_price ~ "Buy",
-        TRUE ~ "Not Buy"
+        value > current_price ~ "Purchase",
+        TRUE ~ "Do Not Purchase"
       )) %>%
       ggplot(aes(value, fill=label)) + 
       geom_density(show.legend = FALSE, fill = "blue") +

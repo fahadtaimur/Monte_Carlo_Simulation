@@ -7,7 +7,7 @@ library(ggthemes)
 library(shinyWidgets)
 library(DT)
 library(data.table)
-library(quantmod)
+library(quantmod) 
 library(timetk)
 
 source(file="functions.R")
